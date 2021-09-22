@@ -30,12 +30,14 @@ pub mod pgp_backends;
 pub use pgp_backends::RPGPBackend;
 #[cfg(feature = "sequoia")]
 pub use pgp_backends::SequoiaBackend;
-pub use pgp_backends::{ArmoredKey, Backend, CipherSuite, DefaultBackend, UserID};
+pub use pgp_backends::{
+	ArmoredKey, Backend, CipherSuite, DefaultBackend, UserID,
+};
 
 #[cfg(test)]
 mod meaningless_test {
-    #[test]
-    fn it_works() {
-        assert_eq!(1 + 1, 2);
-    }
+	#[test]
+	fn it_works() {
+		assert_eq!(1 + 1, 2);
+	}
 }
