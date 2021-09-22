@@ -262,7 +262,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f76f15096822ca97dcc626a98ce3eb93c8afc795f33994a63e8d4ed767007e4"
 dependencies = [
- "bzip2",
+ "bzip2 0.4.2",
  "flate2",
  "libc",
 ]
@@ -272,6 +272,16 @@ name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
+
+[[package]]
+name = "bzip2"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42b7c3cbf0fa9c1b82308d57191728ca0256cb821220f4e2fd410a72ade26e3b"
+dependencies = [
+ "bzip2-sys",
+ "libc",
+]
 
 [[package]]
 name = "bzip2"
@@ -737,6 +747,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
+name = "enum-set"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbf2bab91676279dd3148f1d28737631e98b3f6c662e444d700d9d6ccf6665df"
+
+[[package]]
+name = "filetime"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "975ccf83d8d9d0d84682850a38c8169027be83368805971cc4f238c2b245bc98"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "redox_syscall 0.2.10",
+ "winapi",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -943,6 +971,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2396cf99d2f58611cd69f0efeee4af3d2e2c7b61bed433515029163aa567e65c"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "libpcre-sys"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ff3dd28ba96d6fe6752882f2f1b25ba8e1646448e79042442347cf3a92a6666"
+dependencies = [
+ "bzip2 0.3.3",
+ "libc",
+ "pkg-config",
+ "tar",
 ]
 
 [[package]]
@@ -1172,6 +1212,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afb2e1c3ee07430c2cf76151675e583e0f19985fa6efae47d6848a3e2c824f85"
 
 [[package]]
+name = "pcre"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f2cf69d4d3e55fac13ccbbf142e650bccbcd9cd2e5b5b69033df9e97d190562"
+dependencies = [
+ "enum-set",
+ "libc",
+ "libpcre-sys",
+]
+
+[[package]]
 name = "peeking_take_while"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1395,13 +1446,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
+name = "redox_syscall"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8383f39639269cde97d255a32bdb68c047337295414940c68bdd30c2e13203ff"
+dependencies = [
+ "bitflags",
+]
+
+[[package]]
 name = "redox_users"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de0737333e7a9502c789a36d7c7fa6092a49895d4faa31ca5df163857ded2e9d"
 dependencies = [
  "getrandom",
- "redox_syscall",
+ "redox_syscall 0.1.57",
  "rust-argon2",
 ]
 
@@ -1501,7 +1561,7 @@ dependencies = [
  "backtrace",
  "base64 0.13.0",
  "buffered-reader",
- "bzip2",
+ "bzip2 0.4.2",
  "chrono",
  "dyn-clone",
  "eax",
@@ -1691,6 +1751,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tar"
+version = "0.4.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6f5515d3add52e0bbdcad7b83c388bb36ba7b754dda3b5f5bc2d38640cdba5c"
+dependencies = [
+ "filetime",
+ "libc",
+ "xattr",
+]
+
+[[package]]
 name = "term"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1862,10 +1933,10 @@ dependencies = [
  "log",
  "mimalloc",
  "nettle",
+ "pcre",
  "pgp",
  "rand",
  "rayon",
- "regex",
  "sequoia-openpgp",
  "sha-1",
  "smallvec",
@@ -1948,6 +2019,15 @@ dependencies = [
  "curve25519-dalek",
  "rand_core",
  "zeroize",
+]
+
+[[package]]
+name = "xattr"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "244c3741f4240ef46274860397c7c74e50eb23624996930e484c16679633a54c"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

@@ -10,7 +10,7 @@ extern crate indicatif;
 extern crate log;
 extern crate mimalloc;
 extern crate rayon;
-extern crate regex;
+extern crate pcre;
 
 extern crate vanity_gpg;
 
@@ -21,7 +21,7 @@ use backtrace::Backtrace;
 use clap::Clap;
 use log::{debug, info, warn, Level};
 use rayon::ThreadPoolBuilder;
-use regex::Regex;
+use pcre::Pcre;
 
 use std::env;
 use std::fmt;
@@ -83,12 +83,12 @@ struct Opts {
 	pattern: String,
 	/// Cipher suite
 	#[clap(
-        short = 'c',
-        long = "cipher-suite",
-        about = "Cipher suite",
-        default_value = "Ed25519",
-        possible_values = &[ "Ed25519", "RSA2048", "RSA3072", "RSA4096", "NISTP256", "NISTP384", "NISTP521" ],
-    )]
+		short = 'c',
+		long = "cipher-suite",
+		about = "Cipher suite",
+		default_value = "Ed25519",
+		possible_values = &[ "Ed25519", "RSA2048", "RSA3072", "RSA4096", "NISTP256", "NISTP384", "NISTP521" ],
+	)]
 	cipher_suite: String,
 	/// User ID
 	#[clap(
@@ -292,41 +292,42 @@ fn main() -> Result<(), Error> {
 
 	for thread_id in 0..opts.jobs {
 		let user_id_cloned = user_id.clone();
-		let pattern = Regex::new(&opts.pattern)?;
 		let dry_run = opts.dry_run;
 		let cipher_suite = CipherSuite::from_str(&opts.cipher_suite)?;
 		let counter_cloned = Arc::clone(&counter);
 		info!("({}): Spawning thread", thread_id);
+		let pattern = opts.pattern.clone();
 		pool.spawn(move || {
-            let mut key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
-            let mut reshuffle_counter: usize = KEY_RESHUFFLE_LIMIT;
-            let mut report_counter: usize = 0;
-            loop {
-                let fingerprint = key.get_fingerprint();
-                if pattern.is_match(&fingerprint) {
-                    warn!("({}): [{}] matched", thread_id, &fingerprint);
-                    counter_cloned.count_success();
-                    key.save_key(&user_id_cloned, dry_run).unwrap_or(());
-                    key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
-                } else if reshuffle_counter == 0 {
-                    info!(
-                        "({}): Reshuffle limit reached, generating new primary key",
-                        thread_id
-                    );
-                    key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
-                    reshuffle_counter = KEY_RESHUFFLE_LIMIT;
-                } else {
-                    info!("({}): [{}] is not a match", thread_id, fingerprint);
-                    reshuffle_counter -= 1;
-                    key.shuffle().unwrap_or(());
-                }
-                report_counter += 1;
-                if report_counter >= COUNTER_THRESHOLD {
-                    counter_cloned.count_total(report_counter);
-                    report_counter = 0;
-                }
-            }
-        });
+			let mut pattern = Pcre::compile(&pattern).unwrap();
+			let mut key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
+			let mut reshuffle_counter: usize = KEY_RESHUFFLE_LIMIT;
+			let mut report_counter: usize = 0;
+			loop {
+				let fingerprint = key.get_fingerprint();
+				if pattern.exec(&fingerprint).is_some() {
+					warn!("({}): [{}] matched", thread_id, &fingerprint);
+					counter_cloned.count_success();
+					key.save_key(&user_id_cloned, dry_run).unwrap_or(());
+					key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
+				} else if reshuffle_counter == 0 {
+					info!(
+						"({}): Reshuffle limit reached, generating new primary key",
+						thread_id
+					);
+					key = Key::new(DefaultBackend::new(cipher_suite.clone()).unwrap());
+					reshuffle_counter = KEY_RESHUFFLE_LIMIT;
+				} else {
+					info!("({}): [{}] is not a match", thread_id, fingerprint);
+					reshuffle_counter -= 1;
+					key.shuffle().unwrap_or(());
+				}
+				report_counter += 1;
+				if report_counter >= COUNTER_THRESHOLD {
+					counter_cloned.count_total(report_counter);
+					report_counter = 0;
+				}
+			}
+		});
 	}
 
 	// Setup summary

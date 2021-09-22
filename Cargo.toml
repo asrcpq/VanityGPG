@@ -30,7 +30,7 @@ pgp = { version = "^0.7", optional = true }
 clap = "3.0.0-beta.2"
 rand = { version = "^0.7", optional = true }
 rayon = "^1.5"
-regex = "^1.4"
+pcre = "^0.2"
 sha-1 = { version = "^0.9", features = [ "asm", "compress" ], optional = true }
 anyhow = "^1.0"
 chrono = { version = "^0.4", optional = true }
