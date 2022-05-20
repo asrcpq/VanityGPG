@@ -304,7 +304,60 @@ fn main() -> Result<(), Error> {
 			let mut report_counter: usize = 0;
 			loop {
 				let fingerprint = key.get_fingerprint();
-				if pattern.exec(&fingerprint).is_some() {
+				let bs: Vec<u8> = fingerprint.bytes().rev().take(16).collect();
+				fn test1(bs: Vec<u8>) -> bool {
+				if bs[0] != bs[1] {
+					if bs[0] != bs[2] {
+						for i in 1..4 {
+							for j in 0..4 {
+								if bs[i] != bs[j * 4 + i] {
+									return false
+								}
+							}
+						}
+					} else {
+						if bs[0] == bs[4] {
+							for i in 0..4 {
+								if bs[i * 2] != bs[i * 2 + 1] {
+									return false
+								}
+								if bs[8 + i * 2] != bs[9 + i * 2] {
+									return false
+								}
+							}
+						} else {
+							for i in vec![0, 1, 8, 9].into_iter() {
+								if bs[i] != bs[i + 2] {
+									return false
+								}
+							}
+							for i in 0..8 {
+								if bs[i] != bs[i + 8] {
+									return false
+								}
+							}
+						}
+					}
+				} else {
+					if bs[0] == bs[2] {
+						for i in 0..4 {
+							for j in 1..4 {
+								if bs[i * 4] != bs[i * 4 + j] {
+									return false
+								}
+							}
+						}
+					} else {
+						for i in 0..8 {
+							if bs[i * 2] != bs[i * 2 + 1] {
+								return false
+							}
+						}
+					}
+				}
+				true
+				}
+				if test1(bs) {
 					warn!("({}): [{}] matched", thread_id, &fingerprint);
 					counter_cloned.count_success();
 					key.save_key(&user_id_cloned, dry_run).unwrap_or(());
